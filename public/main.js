@@ -12,7 +12,7 @@ function createWindow() {
 	const win = new BrowserWindow({
 		width: 800,
 		height: 500,
-		backgroundColor: "#BBB"
+		backgroundColor: "#00d2ff"
 	});
 
 	//TODO isDev is not working
