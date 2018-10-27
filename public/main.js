@@ -10,18 +10,20 @@ const grinBin = `${appRootDir}/grin-bin/grin`;
 
 function createWindow() {
 	const win = new BrowserWindow({
-		width: 800,
-		height: 500,
+		width: isDev ? 1200 : 800,
+		height: 550,
 		backgroundColor: "#00d2ff"
 	});
 
+	console.log("isDev: ", isDev);
+
 	//TODO isDev is not working
-	// if (isDev) {
-	win.loadURL("http://localhost:3000/");
-	win.webContents.openDevTools();
-	// } else {
-	//win.loadURL(`file://${path.join(__dirname, "../build/index.html")}`);
-	//}
+	if (isDev) {
+		win.loadURL("http://localhost:3000/");
+		win.webContents.openDevTools();
+	} else {
+		win.loadURL(`file://${path.join(__dirname, "../build/index.html")}`);
+	}
 }
 
 app.on("closed", () => {
@@ -57,8 +59,6 @@ const getGrinServerResponse = (path, onResult) => {
 //Wallet docs
 //https://github.com/mimblewimble/grin/blob/master/doc/api/wallet_owner_api.md
 const getGrinWalletResponse = (path, onResult) => {
-	//const url = "http://localhost:13420/v1/wallet/owner/retrieve_summary_info";
-
 	const url = `http://localhost:13420/v1${path}`;
 
 	axios({
@@ -66,7 +66,7 @@ const getGrinWalletResponse = (path, onResult) => {
 		url,
 		auth: {
 			username: "grin",
-			password: "NYTXd2PmYjBlujFLqrC2"
+			password: "NYTXd2PmYjBlujFLqrC2" //TODO read from ~/.grin/.api_secret
 		}
 	})
 		.then(response => {
@@ -171,7 +171,7 @@ const lsCommand = () => {
 app.on("ready", () => {
 	createWindow();
 
-	lsCommand();
+	//lsCommand();
 	//TODO start grin daemon and wallet owner_api
 
 	//Hack so the grin process picks up the config
@@ -188,15 +188,15 @@ app.on("ready", () => {
 
 	ipcMain.on("grin-server-request", (event, args) => {
 		const { path } = args;
-		getGrinServerResponse(path, grinResult => {
-			event.sender.send("grin-server-reply", grinResult);
+		getGrinServerResponse(path, result => {
+			event.sender.send("grin-server-reply", { path, result }); //Passing path back so we know what data we received
 		});
 	});
 
 	ipcMain.on("grin-wallet-request", (event, args) => {
 		const { path } = args;
-		getGrinWalletResponse(path, grinResult => {
-			event.sender.send("grin-wallet-reply", grinResult);
+		getGrinWalletResponse(path, result => {
+			event.sender.send("grin-wallet-reply", { path, result });
 		});
 	});
 });

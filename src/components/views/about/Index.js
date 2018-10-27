@@ -16,7 +16,7 @@ const styles = theme => {
 		},
 		text: {},
 		smallText: {
-			fontSize: theme.typography.display1.fontSize
+			fontSize: theme.typography.h4.fontSize
 		}
 	};
 };
@@ -29,7 +29,7 @@ class About extends Component {
 		const { isConnected, statusDetails } = grinServer;
 
 		if (!isConnected) {
-			return <Typography variant="body1">Loading...</Typography>;
+			return <Typography variant="body2">Loading...</Typography>;
 		}
 
 		const { connections, protocol_version, tip, user_agent } = statusDetails;
@@ -45,13 +45,13 @@ class About extends Component {
 			<div className={classes.content}>
 				<div>
 					<Typography variant="headline">Node details</Typography>
-					<Typography variant="body1">
+					<Typography variant="body2">
 						Connected peers: <b>{connections}</b>
 					</Typography>
-					<Typography variant="body1">
+					<Typography variant="body2">
 						Protocol version: <b>{protocol_version}</b>
 					</Typography>
-					<Typography variant="body1">
+					<Typography variant="body2">
 						User agent: <b>{user_agent}</b>
 					</Typography>
 				</div>
@@ -59,13 +59,13 @@ class About extends Component {
 				<div>
 					<Typography variant="headline">Chain details</Typography>
 
-					<Typography variant="body1">
+					<Typography variant="body2">
 						Current chain height: <b>{height}</b>
 					</Typography>
-					<Typography variant="body1">
+					<Typography variant="bodbody2y1">
 						Total difficulty: <b>{total_difficulty}</b>
 					</Typography>
-					{/* <Typography variant="body1">
+					{/* <Typography variant="body2">
 						Last block pushed: <b>{last_block_pushed}</b>
 					</Typography> */}
 				</div>
@@ -77,7 +77,7 @@ class About extends Component {
 		const { classes } = this.props;
 		return (
 			<div className={classes.root}>
-				<Typography variant="display3">About</Typography>
+				<Typography variant="h2">About</Typography>
 				{this.renderDetails()}
 			</div>
 		);

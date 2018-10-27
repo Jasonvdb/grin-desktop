@@ -8,8 +8,8 @@ class Server {
 	constructor() {
 		//Listen for updates
 		console.log("Listening for server state updates");
-		ipcRenderer.on("grin-server-reply", (event, statusDetails) => {
-			this.statusDetails = statusDetails;
+		ipcRenderer.on("grin-server-reply", (event, { path, result }) => {
+			this.statusDetails = result; //TODO break down into each element
 		});
 	}
 

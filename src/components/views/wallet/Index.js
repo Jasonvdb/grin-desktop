@@ -17,7 +17,7 @@ const styles = theme => {
 		},
 		text: {},
 		smallText: {
-			fontSize: theme.typography.display1.fontSize
+			fontSize: theme.typography.h4.fontSize
 		},
 		actionsContainer: {
 			display: "flex",
@@ -52,7 +52,6 @@ class Wallet extends Component {
 
 	nextOtherBalance() {
 		const { selectedOtherBalanceKey } = this.state;
-
 		const possibleKeys = Object.keys(this.otherBalanceTypes);
 		const currentIndex = possibleKeys.indexOf(selectedOtherBalanceKey);
 
@@ -80,7 +79,6 @@ class Wallet extends Component {
 	renderOtherBalance() {
 		const { classes } = this.props;
 		const { selectedOtherBalanceKey } = this.state;
-
 		const formattedValues = grinWallet[selectedOtherBalanceKey];
 
 		return (
@@ -88,7 +86,7 @@ class Wallet extends Component {
 				style={{ cursor: "pointer" }}
 				onClick={this.nextOtherBalance.bind(this)}
 				className={classes.text}
-				variant="display2"
+				variant="h3"
 			>
 				{formattedValues.base}
 				<span className={classes.smallText}>
@@ -101,22 +99,21 @@ class Wallet extends Component {
 
 	renderBalances() {
 		const { classes } = this.props;
-
 		const { isConnected, formattedTotal } = grinWallet;
 
 		if (!isConnected) {
 			return (
 				<div className={classes.content}>
-					<Typography variant="display1">Loading...</Typography>
+					<Typography variant="h4">Loading...</Typography>
 				</div>
 			);
 		}
 
 		return (
 			<div className={classes.content}>
-				<Typography className={classes.text} variant="display4">
+				<Typography className={classes.text} variant="h1">
 					{formattedTotal.base}
-					<span className={classes.smallText}>.{formattedTotal.decimals}</span>
+					<span className={classes.smallText}>. {formattedTotal.decimals}</span>
 					<span style={{ marginLeft: 20 }} className={classes.smallText}>
 						grin
 					</span>

@@ -1,5 +1,9 @@
 const { ipcRenderer } = window.require("electron");
 import { observable, action, computed } from "mobx";
+import moment from "moment";
+
+const BALANCES_PATH = "/wallet/owner/retrieve_summary_info?refresh";
+const TRANSACTIONS_PATH = "/wallet/owner/retrieve_txs?refresh";
 
 class Wallet {
 	@observable
@@ -20,37 +24,94 @@ class Wallet {
 	@observable
 	total = null;
 
+	@observable
+	transactions = null;
+
 	constructor() {
 		//Listen for updates
 		console.log("Listening for wallet state updates");
 
 		this.updateTimer = setInterval(() => {
 			this.refreshInfo();
+
+			this.refreshTransactions();
 		}, 1000);
 
-		ipcRenderer.on("grin-wallet-reply", (event, walletInfo) => {
-			const {
-				amount_awaiting_confirmation,
-				amount_currently_spendable,
-				amount_immature,
-				amount_locked,
-				last_confirmed_height,
-				total
-			} = walletInfo[1];
-
-			this.amount_awaiting_confirmation = amount_awaiting_confirmation;
-			this.amount_currently_spendable = amount_currently_spendable;
-			this.amount_immature = amount_immature;
-			this.amount_locked = amount_locked;
-			this.last_confirmed_height = last_confirmed_height;
-			this.total = total;
+		ipcRenderer.on("grin-wallet-reply", (event, { path, result }) => {
+			switch (path) {
+				case BALANCES_PATH:
+					this.updateBalances(result);
+					break;
+				case TRANSACTIONS_PATH:
+					this.updateTransactions(result);
+					break;
+			}
 		});
 	}
 
 	refreshInfo() {
 		ipcRenderer.send("grin-wallet-request", {
-			path: "/wallet/owner/retrieve_summary_info?refresh"
+			path: BALANCES_PATH
 		});
+	}
+
+	refreshTransactions() {
+		ipcRenderer.send("grin-wallet-request", {
+			path: TRANSACTIONS_PATH
+		});
+	}
+
+	updateBalances(balances) {
+		const {
+			amount_awaiting_confirmation,
+			amount_currently_spendable,
+			amount_immature,
+			amount_locked,
+			last_confirmed_height,
+			total
+		} = balances[1];
+
+		this.amount_awaiting_confirmation = amount_awaiting_confirmation;
+		this.amount_currently_spendable = amount_currently_spendable;
+		this.amount_immature = amount_immature;
+		this.amount_locked = amount_locked;
+		this.last_confirmed_height = last_confirmed_height;
+		this.total = total;
+	}
+
+	updateTransactions(transactions) {
+		console.log(transactions[1]);
+
+		let formattedTransactions = [];
+		transactions[1].forEach(tx => {
+			let { amount_credited, amount_debited, creation_ts } = tx;
+
+			let formattedAmountCredited = null;
+			let formattedAmountDebited = null;
+
+			if (amount_credited > 0) {
+				const { base, decimals } = this.formatValue(amount_credited);
+				formattedAmountCredited = `${base}.${decimals}`;
+			}
+
+			if (amount_debited > 0) {
+				const { base, decimals } = this.formatValue(amount_debited);
+				formattedAmountDebited = `-${base}.${decimals}`;
+			}
+
+			//creation_ts
+
+			const txTime = moment(creation_ts).format("MMMM Do YYYY, h:mm:ss a");
+
+			formattedTransactions.push({
+				...tx,
+				formattedAmountCredited,
+				formattedAmountDebited,
+				txTime
+			});
+		});
+
+		this.transactions = formattedTransactions;
 	}
 
 	@computed

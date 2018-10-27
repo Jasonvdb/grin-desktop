@@ -13,6 +13,7 @@ import ListSubheader from "@material-ui/core/ListSubheader";
 import ConnectedIcon from "@material-ui/icons/CheckCircle";
 import ContactsIcon from "@material-ui/icons/People";
 import PeersIcon from "@material-ui/icons/GroupWork";
+import TransactionIcon from "@material-ui/icons/List";
 import WalletIcon from "@material-ui/icons/AccountBalanceWallet";
 import SettingsIcon from "@material-ui/icons/Settings";
 import AboutIcon from "@material-ui/icons/Info";
@@ -33,7 +34,7 @@ const styles = theme => ({
 	},
 	details: {
 		textAlign: "center",
-		paddingBottom: theme.spacing.unit * 3
+		paddingBottom: theme.spacing.unit * 2
 	},
 	infoSpan: {
 		textAlign: "center",
@@ -93,15 +94,15 @@ class MenuContent extends Component {
 			const { height } = tip;
 
 			detailArray = [
-				<Typography variant="subheading">Peers: {connections}</Typography>,
-				<Typography variant="subheading">Height: {height}</Typography>
+				<Typography variant="subtitle1">Peers: {connections}</Typography>,
+				<Typography variant="subtitle1">Height: {height}</Typography>
 			];
 		}
 
 		return (
 			<div className={classes.details}>
 				{connected ? <ConnectedIcon className={classes.icon} /> : null}
-				<Typography variant="subheading">
+				<Typography variant="subtitle1">
 					{connected ? "Connected" : "Connecting..."}
 				</Typography>
 				{connected ? (
@@ -120,11 +121,7 @@ class MenuContent extends Component {
 		return (
 			<div className={classes.content}>
 				<div>
-					<Typography
-						style={{ textAlign: "center" }}
-						variant="display1"
-						gutterBottom
-					>
+					<Typography style={{ textAlign: "center" }} variant="h4" gutterBottom>
 						Grin wallet
 					</Typography>
 
@@ -142,12 +139,12 @@ class MenuContent extends Component {
 						Wallet
 					</MenuItem>
 
-					{/* <MenuItem
+					<MenuItem
 						to="/transactions"
 						icon={<TransactionIcon className={classes.icon} />}
 					>
 						Transactions
-					</MenuItem> */}
+					</MenuItem>
 
 					<MenuItem to="/peers" icon={<PeersIcon className={classes.icon} />}>
 						Network peers
