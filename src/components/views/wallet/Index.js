@@ -19,10 +19,14 @@ const styles = theme => {
 			fontSize: theme.typography.display1.fontSize
 		},
 		actionsContainer: {
-			display: "flex"
+			display: "flex",
+			justifyContent: "center"
 		},
-		actionButtonDiv: {
-			flex: 1
+		actionButton: {
+			//flex: 1
+			width: 100,
+			marginLeft: theme.spacing.unit,
+			marginRight: theme.spacing.unit
 		}
 	};
 };
@@ -33,7 +37,7 @@ class Wallet extends Component {
 
 		this.subUnits = 1000000000;
 
-		//When the user clicks we itterate through other balances
+		//When the user clicks we iterate through other balances
 		this.otherBalanceTypes = {
 			amount_awaiting_confirmation: "awaiting confirmation",
 			amount_currently_spendable: "spendable",
@@ -84,12 +88,12 @@ class Wallet extends Component {
 
 		return (
 			<div className={classes.actionsContainer}>
-				<div className={classes.actionButtonDiv}>
-					<Button fullWidth>Receive</Button>
-				</div>
-				<div className={classes.actionButtonDiv}>
-					<Button fullWidth>Send</Button>
-				</div>
+				<Button className={classes.actionButton} fullWidth>
+					Receive
+				</Button>
+				<Button className={classes.actionButton} fullWidth>
+					Send
+				</Button>
 			</div>
 		);
 	}
