@@ -1,18 +1,26 @@
 const { ipcRenderer } = window.require("electron");
-//TODO use mobx here
+import { observable, action, computed } from "mobx";
+
 class Server {
+	@observable
 	statusDetails = null;
 
 	constructor() {
 		//Listen for updates
-		console.log("Listening for updates");
+		console.log("Listening for server state updates");
 		ipcRenderer.on("grin-server-reply", (event, statusDetails) => {
 			this.statusDetails = statusDetails;
 		});
 	}
 
-	refreshStatus(onSuccess = null, onError = null) {
+	@action
+	refreshStatus() {
 		ipcRenderer.send("grin-server-request", { path: "/status" });
+	}
+
+	@computed
+	get isConnected() {
+		return !!this.statusDetails;
 	}
 }
 

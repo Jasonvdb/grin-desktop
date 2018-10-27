@@ -1,10 +1,11 @@
 import React, { Component } from "react";
+import { observer } from "mobx-react";
 import Typography from "@material-ui/core/Typography";
 import Button from "@material-ui/core/Button";
 import { withStyles } from "@material-ui/core/styles";
 
+import grinWallet from "../../../stores/grinWallet";
 import { defaultRootStyle, defaultContentStyle } from "../../../styles/theme";
-const { ipcRenderer } = window.require("electron");
 
 const styles = theme => {
 	return {
@@ -31,44 +32,22 @@ const styles = theme => {
 	};
 };
 
+@observer
 class Wallet extends Component {
 	constructor(props) {
 		super(props);
 
-		this.subUnits = 1000000000;
-
 		//When the user clicks we iterate through other balances
 		this.otherBalanceTypes = {
-			amount_awaiting_confirmation: "awaiting confirmation",
-			amount_currently_spendable: "spendable",
-			amount_immature: "immature",
-			amount_locked: "locked"
+			formattedAwaitingConfirmation: "awaiting confirmation",
+			formattedCurrentlySpendable: "spendable",
+			formattedAmountImmature: "immature",
+			formattedAmountLocked: "locked"
 		};
 
 		this.state = {
 			selectedOtherBalanceKey: Object.keys(this.otherBalanceTypes)[0]
 		};
-	}
-
-	componentDidMount() {
-		//TODO move this to a store
-		ipcRenderer.on("grin-wallet-reply", (event, walletInfo) => {
-			this.setState(walletInfo[1]);
-		});
-
-		this.updateTimer = setInterval(() => {
-			this.refreshInfo();
-		}, 500);
-	}
-
-	componentWillUnmount() {
-		clearTimeout(this.updateTimer);
-	}
-
-	refreshInfo() {
-		ipcRenderer.send("grin-wallet-request", {
-			path: "/wallet/owner/retrieve_summary_info?refresh"
-		});
 	}
 
 	nextOtherBalance() {
@@ -78,7 +57,7 @@ class Wallet extends Component {
 		const currentIndex = possibleKeys.indexOf(selectedOtherBalanceKey);
 
 		const newIndex =
-			currentIndex >= possibleKeys.length - 1 ? 0 : currentIndex + 1; //TODO reset to zero
+			currentIndex >= possibleKeys.length - 1 ? 0 : currentIndex + 1;
 
 		this.setState({ selectedOtherBalanceKey: possibleKeys[newIndex] });
 	}
@@ -102,6 +81,8 @@ class Wallet extends Component {
 		const { classes } = this.props;
 		const { selectedOtherBalanceKey } = this.state;
 
+		const formattedValues = grinWallet[selectedOtherBalanceKey];
+
 		return (
 			<Typography
 				style={{ cursor: "pointer" }}
@@ -109,7 +90,7 @@ class Wallet extends Component {
 				className={classes.text}
 				variant="display2"
 			>
-				{this.state[selectedOtherBalanceKey] / this.subUnits}
+				{formattedValues.base}
 				<span className={classes.smallText}>
 					&nbsp;grin&nbsp;
 					{this.otherBalanceTypes[selectedOtherBalanceKey]}
@@ -120,24 +101,28 @@ class Wallet extends Component {
 
 	renderBalances() {
 		const { classes } = this.props;
-		const { total } = this.state;
 
-		if (total === undefined) {
+		const { isConnected, formattedTotal } = grinWallet;
+
+		if (!isConnected) {
 			return (
 				<div className={classes.content}>
 					<Typography variant="display1">Loading...</Typography>
 				</div>
 			);
 		}
+
 		return (
 			<div className={classes.content}>
 				<Typography className={classes.text} variant="display4">
-					{total / this.subUnits}{" "}
-					<span className={classes.smallText}>grin</span>
+					{formattedTotal.base}
+					<span className={classes.smallText}>.{formattedTotal.decimals}</span>
+					<span style={{ marginLeft: 20 }} className={classes.smallText}>
+						grin
+					</span>
 				</Typography>
 
 				{this.renderOtherBalance()}
-
 				{this.renderActionButtons()}
 			</div>
 		);

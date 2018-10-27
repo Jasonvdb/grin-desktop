@@ -1,25 +1,24 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
+import { observer } from "mobx-react";
 import { withStyles } from "@material-ui/core/styles";
 import List from "@material-ui/core/List";
-import Divider from "@material-ui/core/Divider";
-import Button from "@material-ui/core/Button";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
 import ListSubheader from "@material-ui/core/ListSubheader";
 
 //Icons
-import TransactionIcon from "@material-ui/icons/List";
 import ConnectedIcon from "@material-ui/icons/CheckCircle";
 import ContactsIcon from "@material-ui/icons/People";
 import PeersIcon from "@material-ui/icons/GroupWork";
 import WalletIcon from "@material-ui/icons/AccountBalanceWallet";
 import SettingsIcon from "@material-ui/icons/Settings";
 import AboutIcon from "@material-ui/icons/Info";
-import grinServer from "../../stores/grinServer";
 import { Typography } from "@material-ui/core";
+
+import grinServer from "../../stores/grinServer";
 
 const styles = theme => ({
 	content: {
@@ -66,47 +65,29 @@ const MenuItem = ({
 	return listItem;
 };
 
+@observer
 class MenuContent extends Component {
 	constructor(props) {
 		super(props);
-
-		this.state = { statusDetails: null };
 	}
 
 	componentDidMount() {
-		this.setState({ statusDetails: grinServer.statusDetails });
-		//TODO when mobx is working this will move to an observer
 		this.updateTimer = setInterval(() => {
 			grinServer.refreshStatus();
-			this.setState({ statusDetails: grinServer.statusDetails });
-		}, 200);
+		}, 1000);
 	}
 
 	componentWillUnmount() {
 		clearTimeout(this.updateTimer);
 	}
 
-	// renderStatus(connected) {
-	// 	const { classes } = this.props;
-
-	// 	return (
-	// 		<span className={classes.infoSpan}>
-	// 			<Typography variant="subheading">
-	// 				{connected ? "Connected" : "Connecting..."}
-	// 			</Typography>
-	// 			&nbsp;&nbsp;
-
-	// 		</span>
-	// 	);
-	// }
-
 	renderWalletDetails() {
 		const { classes } = this.props;
 
-		const { statusDetails } = this.state;
+		const { isConnected, statusDetails } = grinServer;
 		let connected = false;
 		let detailArray = [];
-		if (statusDetails) {
+		if (isConnected) {
 			connected = true;
 			const { connections, tip } = statusDetails;
 			const { height } = tip;

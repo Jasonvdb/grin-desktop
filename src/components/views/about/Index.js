@@ -1,9 +1,9 @@
 import React, { Component } from "react";
+import { observer } from "mobx-react";
 import Typography from "@material-ui/core/Typography";
 import { withStyles } from "@material-ui/core/styles";
 
 import grinServer from "../../../stores/grinServer";
-
 import { defaultRootStyle, defaultContentStyle } from "../../../styles/theme";
 
 const styles = theme => {
@@ -21,32 +21,18 @@ const styles = theme => {
 	};
 };
 
-class Transactions extends Component {
-	constructor(props) {
-		super(props);
-
-		this.state = {};
-	}
-
-	componentDidMount() {
-		//TODO when mobx is working this will move to an observer
-		this.setState(grinServer.statusDetails);
-		this.updateTimers = setInterval(() => {
-			this.setState(grinServer.statusDetails);
-		}, 1000);
-	}
-
-	componentWillUnmount() {
-		clearTimeout(this.updateTimers);
-	}
-
+@observer
+class About extends Component {
 	renderDetails() {
 		const { classes } = this.props;
-		const { connections, protocol_version, tip, user_agent } = this.state;
 
-		if (!connections) {
+		const { isConnected, statusDetails } = grinServer;
+
+		if (!isConnected) {
 			return <Typography variant="body1">Loading...</Typography>;
 		}
+
+		const { connections, protocol_version, tip, user_agent } = statusDetails;
 
 		const {
 			height,
@@ -98,4 +84,4 @@ class Transactions extends Component {
 	}
 }
 
-export default withStyles(styles)(Transactions);
+export default withStyles(styles)(About);

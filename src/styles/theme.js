@@ -3,8 +3,6 @@ import baseColor from "@material-ui/core/colors/cyan";
 import primaryColor from "@material-ui/core/colors/deepOrange";
 import secondaryColor from "@material-ui/core/colors/cyan";
 
-// const cardBoxShadow = "-1px -1px 1px 1px rgba(234, 234, 234, 1)";
-
 const defaultRootStyle = {
 	flexGrow: 1,
 	textAlign: "center",
@@ -40,9 +38,6 @@ const theme = createMuiTheme({
 				borderWidth: 0.5,
 				borderColor: "white",
 				borderStyle: "solid"
-			},
-			default: {
-				borderColor: "white"
 			}
 		}
 	}
