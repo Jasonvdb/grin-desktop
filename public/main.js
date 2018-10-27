@@ -2,20 +2,102 @@ const { BrowserWindow, Notification, dialog } = require("electron");
 let { app } = require("electron");
 const axios = require("axios");
 const { ipcMain } = require("electron");
-const appRootDir = require("app-root-dir").get();
-const isDev = require("electron-is-dev");
 const path = require("path");
+const log = require("electron-log");
 
-const grinBin = `${appRootDir}/grin-bin/grin`;
+const isDev = process.env.ELECTRON_ENV === "development";
+
+//TODO move constants into a config.js in src/
+const {
+	startGrinServerProcess,
+	startGrinWalletAPIProcess,
+	startGrinWalletListenProcess
+} = require("./grin-child-processes");
+
+// Keep a global reference of the window object, if you don't, the window will
+// be closed automatically when the JavaScript object is garbage collected.
+let win;
+let grinServerProcess;
+let grinWalletAPIProcess;
+let grinWalletListenProcess;
+
+let logQueue = [];
+let logsReady = false;
+
+const sendLog = log => {
+	if (win && logsReady) {
+		win.webContents.send("logs", log);
+	} else {
+		logQueue.push(log);
+	}
+};
+
+const Logger = {
+	info: msg => {
+		log.info(msg);
+		sendLog(msg);
+	},
+	error: msg => {
+		log.error(msg);
+		sendLog(`ERROR: ${msg}`);
+	}
+};
+
+//TODO subscribe to these logs in the frontend
+ipcMain.on("logs-ready", () => {
+	logQueue.map(line => win && win.webContents.send("logs", line));
+	logQueue = [];
+	logsReady = true;
+});
+
+const startGrinServer = async () => {
+	try {
+		grinServerProcess = await startGrinServerProcess({
+			command: "grin",
+			logger: Logger
+		});
+
+		console.log("Got grinServerProcess");
+		//console.log(grinServerProcess);
+	} catch (err) {
+		Logger.error(`Caught Error When Starting grin node server: ${err}`);
+	}
+};
+
+const startWalletAPI = async () => {
+	try {
+		grinWalletAPIProcess = await startGrinWalletAPIProcess({
+			command: "grin",
+			logger: Logger
+		});
+
+		console.log("Got grinWalletAPIProcess");
+		//console.log(grinServerProcess);
+	} catch (err) {
+		Logger.error(`Caught Error When Starting grin wallet API: ${err}`);
+	}
+};
+
+const startWalletListen = async () => {
+	try {
+		grinWalletListenProcess = await startGrinWalletListenProcess({
+			command: "grin",
+			logger: Logger
+		});
+
+		console.log("Got grinWalletListenProcess");
+		//console.log(grinServerProcess);
+	} catch (err) {
+		Logger.error(`Caught Error When Starting grin wallet listen: ${err}`);
+	}
+};
 
 function createWindow() {
-	const win = new BrowserWindow({
-		width: isDev ? 1200 : 800,
+	win = new BrowserWindow({
+		width: 900,
 		height: 550,
-		backgroundColor: "#00d2ff"
+		backgroundColor: "#5433ff"
 	});
-
-	console.log("isDev: ", isDev);
 
 	//TODO isDev is not working
 	if (isDev) {
@@ -25,13 +107,6 @@ function createWindow() {
 		win.loadURL(`file://${path.join(__dirname, "../build/index.html")}`);
 	}
 }
-
-app.on("closed", () => {
-	//TODO kill daemons
-	//rmConfig("grin-server.toml");
-	//rmConfig("grin-wallet.toml");
-	app = null;
-});
 
 //Server docs
 //https://github.com/mimblewimble/grin/blob/master/doc/api/node_api.md
@@ -52,7 +127,7 @@ const getGrinServerResponse = (path, onResult) => {
 		})
 		.catch(error => {
 			console.error("Node API call failed ", url);
-			console.error(error.response.status);
+			console.error(error.response ? error.response.status : error.errno);
 		});
 };
 
@@ -75,119 +150,23 @@ const getGrinWalletResponse = (path, onResult) => {
 		})
 		.catch(error => {
 			console.error("Wallet API call failed ", url);
-			console.error(error.response.status);
+			console.error(error.response ? error.response.status : error.errno);
 		});
 };
 
-const lsCommand = () => {
-	const commandSwitches = [`-al`];
-
-	const spawn = require("child_process").spawn;
-	const cpCommand = spawn("ls", commandSwitches);
-
-	cpCommand.stdout.on("data", data => {
-		console.log(`LS: ${data}`);
-		// dialog.showMessageBox({
-		// 	type: "info",
-		// 	title: "Hi",
-		// 	message: `${grinBin}\n\n${data}`
-		// });
-	});
-
-	cpCommand.stderr.on("data", data => {
-		console.log(`LS ERROR: ${data}`);
-	});
-};
-
-// const copyConfig = filename => {
-// 	const commandSwitches = [`./grin-bin/${filename}`, "./"];
-
-// 	const spawn = require("child_process").spawn;
-// 	const cpCommand = spawn("cp", commandSwitches);
-
-// 	cpCommand.stdout.on("data", data => {
-// 		console.log(`CP: ${data}`);
-// 	});
-
-// 	cpCommand.stderr.on("data", data => {
-// 		console.log(`CP ERROR: ${data}`);
-// 	});
-// };
-
-// const rmConfig = filename => {
-// 	const commandSwitches = [`./${filename}`];
-
-// 	const spawn = require("child_process").spawn;
-// 	const cpCommand = spawn("rm", commandSwitches);
-
-// 	cpCommand.stdout.on("data", data => {
-// 		console.log(`RM: ${data}`);
-// 	});
-
-// 	cpCommand.stderr.on("data", data => {
-// 		console.log(`RM ERROR: ${data}`);
-// 	});
-// };
-
-// const commandDaemon = () => {
-// 	const commandSwitches = [
-// 		"server",
-// 		//"-c",
-// 		//"./grin-bin/grin-server.toml",
-// 		"run"
-// 	];
-
-// 	console.log(`${grinBin} ${commandSwitches.join(" ")}`);
-
-// 	const spawn = require("child_process").spawn;
-// 	const grinDaemon = spawn(grinBin, commandSwitches);
-
-// 	grinDaemon.stdout.on("data", data => {
-// 		console.log(`GRIN DAEMON: ${data}`);
-// 	});
-
-// 	grinDaemon.stderr.on("data", data => {
-// 		console.log(`GRIN DAEMON ERROR: ${data}`);
-// 	});
-// };
-
-// const commandGrinApi = () => {
-// 	const commandSwitches = ["wallet", "owner_api"];
-
-// 	console.log(`${grinBin} ${commandSwitches.join(" ")}`);
-
-// 	const spawn = require("child_process").spawn;
-// 	const grinApi = spawn(grinBin, commandSwitches);
-
-// 	grinApi.stdout.on("data", data => {
-// 		console.log(`GRIN API: ${data}`);
-// 	});
-
-// 	grinApi.stderr.on("data", data => {
-// 		console.log(`GRIN API ERROR: ${data}`);
-// 	});
-// };
-
 app.on("ready", () => {
 	createWindow();
+	//TODO check if a wallet has been initialized first
+	const grinInstallDir = `${app.getPath("home")}/.grin`;
+	console.log("Check DIR: ", grinInstallDir);
 
-	//lsCommand();
-	//TODO start grin daemon and wallet owner_api
-
-	//Hack so the grin process picks up the config
-	// copyConfig("grin-server.toml");
-	// copyConfig("grin-wallet.toml");
-
-	// setTimeout(() => {
-	// 	commandDaemon();
-	// }, 1000);
-
-	// setTimeout(() => {
-	// 	commandGrinApi();
-	// }, 2000);
+	//startGrinServer(); //TODO place back when working
+	startWalletAPI();
+	startWalletListen();
 
 	ipcMain.on("grin-server-request", (event, args) => {
 		const { path } = args;
+		//TODO move all possible paths to shared config and then check the frontend is only sending valid ones
 		getGrinServerResponse(path, result => {
 			event.sender.send("grin-server-reply", { path, result }); //Passing path back so we know what data we received
 		});
@@ -201,7 +180,20 @@ app.on("ready", () => {
 	});
 });
 
-//TODO get
-//http://localhost:13413/v1/status
-//http://localhost:13413/v1/peers/connected
-//http://localhost:13413/v1/chain
+// Quit when all windows are closed.
+app.on("window-all-closed", () => {
+	// On macOS it is common for applications and their menu bar
+	// to stay active until the user quits explicitly with Cmd + Q
+	app.quit();
+});
+
+app.on("quit", () => {
+	console.log("KILL processes.");
+	grinServerProcess && grinServerProcess.kill("SIGINT");
+	grinWalletAPIProcess && grinWalletAPIProcess.kill("SIGINT");
+	grinWalletListenProcess && grinWalletListenProcess.kill("SIGINT");
+});
+
+app.on("closed", () => {
+	app = null;
+});

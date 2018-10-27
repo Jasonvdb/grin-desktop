@@ -5,7 +5,7 @@ import secondaryColor from "@material-ui/core/colors/cyan";
 const defaultRootStyle = {
 	flexGrow: 1,
 	textAlign: "center",
-	height: "90%",
+	height: "100%",
 	display: "flex",
 	flexDirection: "column"
 };

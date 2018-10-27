@@ -24,8 +24,7 @@ const styles = theme => {
 			justifyContent: "center"
 		},
 		actionButton: {
-			//flex: 1
-			width: 100,
+			width: 180,
 			marginLeft: theme.spacing.unit,
 			marginRight: theme.spacing.unit
 		}
@@ -39,7 +38,7 @@ class Wallet extends Component {
 
 		//When the user clicks we iterate through other balances
 		this.otherBalanceTypes = {
-			formattedAwaitingConfirmation: "awaiting confirmation",
+			formattedAwaitingConfirmation: "incoming",
 			formattedCurrentlySpendable: "spendable",
 			formattedAmountImmature: "immature",
 			formattedAmountLocked: "locked"
@@ -120,6 +119,7 @@ class Wallet extends Component {
 				</Typography>
 
 				{this.renderOtherBalance()}
+
 				{this.renderActionButtons()}
 			</div>
 		);

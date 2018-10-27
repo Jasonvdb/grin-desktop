@@ -46,7 +46,7 @@ class Server {
 
 	@computed
 	get isConnected() {
-		return !!this.statusDetails;
+		return this.statusDetails && this.statusDetails.connections > 0;
 	}
 
 	@computed

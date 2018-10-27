@@ -12,7 +12,9 @@ import Container from "../common/Container";
 import Wallet from "../views/wallet/Index";
 import Transactions from "../views/transactions/Index";
 import Peers from "../views/peers/Index";
+import Contacts from "../views/contacts/Index";
 import About from "../views/about/Index";
+import Settings from "../views/settings/Index";
 import NotFound from "../common/NotFound";
 
 class Routes extends Component {
@@ -26,8 +28,10 @@ class Routes extends Component {
 							<Route exact path="/" component={Wallet} />
 							<Route exact path="/transactions" component={Transactions} />
 							<Route exact path="/peers" component={Peers} />
+							<Route exact path="/contacts" component={Contacts} />
 							<Route exact path="/about" component={About} />
-							<Route component={NotFound} />
+							<Route exact path="/settings" component={Settings} />
+							<Route component={Wallet} />
 						</Switch>
 					</Container>
 				</MuiThemeProvider>

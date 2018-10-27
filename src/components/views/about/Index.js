@@ -44,7 +44,7 @@ class About extends Component {
 		return (
 			<div className={classes.content}>
 				<div>
-					<Typography variant="headline">Node details</Typography>
+					<Typography variant="h5">Node details</Typography>
 					<Typography variant="body2">
 						Connected peers: <b>{connections}</b>
 					</Typography>
@@ -57,7 +57,7 @@ class About extends Component {
 				</div>
 
 				<div>
-					<Typography variant="headline">Chain details</Typography>
+					<Typography variant="h5">Chain details</Typography>
 
 					<Typography variant="body2">
 						Current chain height: <b>{height}</b>

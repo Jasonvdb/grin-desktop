@@ -25,7 +25,7 @@
     "css-loader": "1.0.0",
     "dotenv": "6.0.0",
     "dotenv-expand": "4.2.0",
-    "electron-is-dev": "^1.0.1",
+    "electron-log": "^2.2.17",
     "eslint": "5.6.0",
     "eslint-config-react-app": "^3.0.4",
     "eslint-loader": "2.1.1",
@@ -81,17 +81,47 @@
     "start": "node scripts/start.js",
     "build": "node scripts/build.js",
     "test": "node scripts/test.js",
-    "electron-start": "electron .",
+    "electron-start": "ELECTRON_ENV=development electron .",
     "preelectron-pack": "npm run build",
     "electron-pack": "build -c.extraMetadata.main=build/main.js"
   },
   "build": {
-    "appId": "com.adaptedhub.bs",
-    "icon": "build/icon.icns",
+    "appId": "com.adaptedhub.grin",
+    "publish": {
+      "provider": "github",
+      "vPrefixedTagName": true,
+      "publishAutoUpdate": true,
+      "releaseType": "draft"
+    },
+    "mac": {
+      "category": "Network",
+      "artifactName": "${productName}-darwin-x64v${version}.${ext}",
+      "extraResources": "assets/bin/darwin/grin",
+      "icon": "build/icon.icns",
+      "target": [
+        "dmg",
+        "zip"
+      ]
+    },
+    "linux": {
+      "category": "Network",
+      "artifactName": "${productName}-linux-${arch}v${version}.${ext}",
+      "extraResources": "assets/bin/linux/grin",
+      "icon": "build/icon.png",
+      "target": "AppImage"
+    },
+    "win": {
+      "artifactName": "${productName}-win32-${arch}v${version}.${ext}",
+      "extraResources": "assets/bin/win32/grin.exe",
+      "icon": "build/icon.ico",
+      "target": "nsis"
+    },
+    "productName": "Grin",
     "files": [
+      "build/icon.*",
       "build/**/*",
       "node_modules/**/*",
-      "build/icon.*"
+      "src/config.js"
     ],
     "directories": {
       "buildResources": "assets"

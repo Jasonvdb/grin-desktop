@@ -5,7 +5,9 @@ class NotFound extends Component {
 	render() {
 		return (
 			<div>
-				<Typography variant="h2">Coming soon.</Typography>
+				<Typography variant="h2">
+					Coming soon. {window.location.pathname}
+				</Typography>
 			</div>
 		);
 	}

@@ -55,6 +55,7 @@
     "it": false,
     "_": false,
     "google": false,
-    "Promise": false
+    "Promise": false,
+    "__dirname": false
   }
 }
