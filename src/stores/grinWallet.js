@@ -28,12 +28,12 @@ class Wallet {
 	transactions = null;
 
 	constructor() {
-		//Listen for updates
 		console.log("Listening for wallet state updates");
+		this.refreshInfo();
+		this.refreshTransactions();
 
-		this.updateTimer = setInterval(() => {
+		setInterval(() => {
 			this.refreshInfo();
-
 			this.refreshTransactions();
 		}, 1000);
 
@@ -80,8 +80,6 @@ class Wallet {
 	}
 
 	updateTransactions(transactions) {
-		console.log(transactions[1]);
-
 		let formattedTransactions = [];
 		transactions[1].forEach(tx => {
 			let { amount_credited, amount_debited, creation_ts } = tx;

@@ -62,7 +62,7 @@ class About extends Component {
 					<Typography variant="body2">
 						Current chain height: <b>{height}</b>
 					</Typography>
-					<Typography variant="bodbody2y1">
+					<Typography variant="body2">
 						Total difficulty: <b>{total_difficulty}</b>
 					</Typography>
 					{/* <Typography variant="body2">

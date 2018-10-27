@@ -72,16 +72,6 @@ class MenuContent extends Component {
 		super(props);
 	}
 
-	componentDidMount() {
-		this.updateTimer = setInterval(() => {
-			grinServer.refreshStatus();
-		}, 1000);
-	}
-
-	componentWillUnmount() {
-		clearTimeout(this.updateTimer);
-	}
-
 	renderWalletDetails() {
 		const { classes } = this.props;
 
@@ -94,8 +84,8 @@ class MenuContent extends Component {
 			const { height } = tip;
 
 			detailArray = [
-				<Typography variant="subtitle1">Peers: {connections}</Typography>,
-				<Typography variant="subtitle1">Height: {height}</Typography>
+				<Typography variant="caption">Peers: {connections}</Typography>,
+				<Typography variant="caption">Height: {height}</Typography>
 			];
 		}
 

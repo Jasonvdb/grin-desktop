@@ -1,5 +1,4 @@
 import { createMuiTheme } from "@material-ui/core/styles";
-import baseColor from "@material-ui/core/colors/cyan";
 import primaryColor from "@material-ui/core/colors/deepOrange";
 import secondaryColor from "@material-ui/core/colors/cyan";
 
@@ -29,6 +28,7 @@ const theme = createMuiTheme({
 		divider: "rgba(255, 255, 255, 0.3)"
 	},
 	typography: {
+		useNextVariants: true,
 		fontFamily: "OpenSans Light"
 	},
 	overrides: {
