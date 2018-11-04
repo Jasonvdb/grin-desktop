@@ -98,6 +98,7 @@ class Wallet {
 			let formattedAmountCredited = null;
 			let formattedAmountDebited = null;
 
+			//FIXME minus the debit from the credit and only display that number
 			if (amount_credited > 0) {
 				const { base, decimals } = formatValue(amount_credited);
 				formattedAmountCredited = `${base}.${decimals}`;
@@ -107,8 +108,6 @@ class Wallet {
 				const { base, decimals } = formatValue(amount_debited);
 				formattedAmountDebited = `-${base}.${decimals}`;
 			}
-
-			//creation_ts
 
 			const txTime = moment(creation_ts).format("MMMM Do YYYY, h:mm:ss a");
 
@@ -120,6 +119,7 @@ class Wallet {
 			});
 		});
 
+		formattedTransactions.reverse();
 		this.transactions = formattedTransactions;
 	}
 

@@ -3,6 +3,7 @@ import { observer } from "mobx-react";
 import Typography from "@material-ui/core/Typography";
 import Button from "@material-ui/core/Button";
 import { withStyles } from "@material-ui/core/styles";
+import { Link } from "react-router-dom";
 
 import grinWallet from "../../../stores/grinWallet";
 import { defaultRootStyle, defaultContentStyle } from "../../../styles/theme";
@@ -65,12 +66,16 @@ class Wallet extends Component {
 
 		return (
 			<div className={classes.actionsContainer}>
-				<Button className={classes.actionButton} fullWidth>
-					Receive
-				</Button>
-				<Button className={classes.actionButton} fullWidth>
-					Send
-				</Button>
+				<Link to="/receive">
+					<Button className={classes.actionButton} fullWidth>
+						Receive
+					</Button>
+				</Link>
+				<Link to="/send">
+					<Button className={classes.actionButton} fullWidth>
+						Send
+					</Button>
+				</Link>
 			</div>
 		);
 	}

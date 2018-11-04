@@ -1,5 +1,5 @@
 import { createMuiTheme } from "@material-ui/core/styles";
-import primaryColor from "@material-ui/core/colors/deepOrange";
+import primaryColor from "@material-ui/core/colors/yellow";
 import secondaryColor from "@material-ui/core/colors/cyan";
 
 const defaultRootStyle = {

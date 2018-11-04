@@ -49,8 +49,8 @@ class Sync extends Component {
 					<div className={classes.content}>
 						<Typography className={classes.text} variant="h1">
 							{base}
-							<span className={classes.smallText}>.{decimals} %</span>
-							<span style={{ marginLeft: 20 }} className={classes.smallText}>
+							<span className={classes.smallText}>.{decimals}%</span>
+							<span style={{ marginLeft: 15 }} className={classes.smallText}>
 								synced
 							</span>
 						</Typography>

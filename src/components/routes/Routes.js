@@ -17,6 +17,8 @@ import Peers from "../views/peers/Index";
 import Contacts from "../views/contacts/Index";
 import About from "../views/about/Index";
 import Settings from "../views/settings/Index";
+import Send from "../views/send/Index";
+import Receive from "../views/receive/Index";
 import NotFound from "../common/NotFound";
 import grinServer from "../../stores/grinServer";
 
@@ -33,6 +35,8 @@ class Routes extends Component {
 							<Switch>
 								{/* <Redirect from="/" to="/wallet" /> */}
 								<Route exact path="/" component={Wallet} />
+								<Route exact path="/send" component={Send} />
+								<Route exact path="/receive" component={Receive} />
 								<Route exact path="/transactions" component={Transactions} />
 								<Route exact path="/peers" component={Peers} />
 								<Route exact path="/contacts" component={Contacts} />
