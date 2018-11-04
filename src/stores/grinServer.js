@@ -11,9 +11,19 @@ class Server {
 	@observable
 	connectedPeers = null;
 
+	@observable
+	errorMessage = null;
+
 	constructor() {
 		console.log("Listening for server state updates");
-		ipcRenderer.on("grin-server-reply", (event, { path, result }) => {
+		ipcRenderer.on("grin-server-reply", (event, { path, result, error }) => {
+			if (error) {
+				console.error(error);
+				this.errorMessage = error;
+				return;
+			}
+
+			this.errorMessage = null;
 			switch (path) {
 				case STATUS_PATH:
 					this.statusDetails = result;

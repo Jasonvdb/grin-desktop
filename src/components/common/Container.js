@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import { withStyles } from "@material-ui/core/styles";
 import Drawer from "@material-ui/core/Drawer";
 import MenuContent from "./MenuContent";
+import ErrorDialog from "./ErrorDialog";
 
 const drawerWidth = 240;
 
@@ -52,6 +53,7 @@ class Container extends React.Component {
 			<div className={classes.root}>
 				{drawer}
 				<main className={classes.content}>{children}</main>
+				<ErrorDialog />
 			</div>
 		);
 	}

@@ -108,11 +108,14 @@ class Wallet extends Component {
 			);
 		}
 
+		const { base, decimals } = formattedTotal;
 		return (
 			<div className={classes.content}>
 				<Typography className={classes.text} variant="h1">
-					{formattedTotal.base}
-					<span className={classes.smallText}>. {formattedTotal.decimals}</span>
+					{base}
+					<span className={classes.smallText}>
+						{decimals ? `.${decimals}` : ""}
+					</span>
 					<span style={{ marginLeft: 20 }} className={classes.smallText}>
 						grin
 					</span>

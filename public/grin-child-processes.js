@@ -3,14 +3,15 @@ const fs = require("fs");
 const path = require("path");
 const cp = require("child_process");
 
-function getProcessName(binName) {
+const getProcessName = binName => {
 	const filename = os.platform() === "win32" ? `${binName}.exe` : binName;
-	console.log(__dirname);
 	const filePath = __dirname.includes("asar")
 		? path.join(__dirname, "..", "..", "assets", "bin", os.platform(), filename)
 		: path.join(__dirname, "..", "assets", "bin", os.platform(), filename);
 	return fs.existsSync(filePath) ? filePath : filename;
-}
+};
+
+module.exports.getProcessName = getProcessName;
 
 async function startChildProcess(name, args, logger) {
 	return new Promise((resolve, reject) => {
@@ -44,5 +45,10 @@ module.exports.startGrinWalletListenProcess = async function({
 	logger
 }) {
 	const args = ["wallet", "--external", "listen"];
+	return startChildProcess(command, args, logger);
+};
+
+module.exports.initGrinWalletProcess = async function({ command, logger }) {
+	const args = ["wallet", "init"];
 	return startChildProcess(command, args, logger);
 };

@@ -27,6 +27,9 @@ class Wallet {
 	@observable
 	transactions = null;
 
+	@observable
+	errorMessage = null;
+
 	constructor() {
 		console.log("Listening for wallet state updates");
 		this.refreshInfo();
@@ -37,7 +40,14 @@ class Wallet {
 			this.refreshTransactions();
 		}, 1000);
 
-		ipcRenderer.on("grin-wallet-reply", (event, { path, result }) => {
+		ipcRenderer.on("grin-wallet-reply", (event, { path, result, error }) => {
+			if (error) {
+				console.error(error);
+				this.errorMessage = error;
+				return;
+			}
+
+			this.errorMessage = null;
 			switch (path) {
 				case BALANCES_PATH:
 					this.updateBalances(result);
@@ -114,7 +124,7 @@ class Wallet {
 
 	@computed
 	get isConnected() {
-		return !!this.total;
+		return this.total !== null;
 	}
 
 	formatValue(value) {

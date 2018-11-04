@@ -4,14 +4,20 @@ const axios = require("axios");
 const { ipcMain } = require("electron");
 const path = require("path");
 const log = require("electron-log");
+const fs = require("fs");
 
 const isDev = process.env.ELECTRON_ENV === "development";
 
+const grinInstallDir = `${app.getPath("home")}/.grin`;
+
 //TODO move constants into a config.js in src/
+
 const {
 	startGrinServerProcess,
 	startGrinWalletAPIProcess,
-	startGrinWalletListenProcess
+	startGrinWalletListenProcess,
+	initGrinWalletProcess,
+	getProcessName
 } = require("./grin-child-processes");
 
 // Keep a global reference of the window object, if you don't, the window will
@@ -20,6 +26,9 @@ let win;
 let grinServerProcess;
 let grinWalletAPIProcess;
 let grinWalletListenProcess;
+let grinWalletInitProcess;
+
+let grinAPIPassword;
 
 let logQueue = [];
 let logsReady = false;
@@ -50,6 +59,7 @@ ipcMain.on("logs-ready", () => {
 	logsReady = true;
 });
 
+//TODO wait until the daemon works and add this again
 const startGrinServer = async () => {
 	try {
 		grinServerProcess = await startGrinServerProcess({
@@ -92,6 +102,20 @@ const startWalletListen = async () => {
 	}
 };
 
+const initWallet = async () => {
+	try {
+		grinWalletInitProcess = await initGrinWalletProcess({
+			command: "grin",
+			logger: Logger
+		});
+
+		console.log("Got grinWalletInitProcess");
+		//console.log(grinServerProcess);
+	} catch (err) {
+		Logger.error(`Caught Error When Starting grin wallet init: ${err}`);
+	}
+};
+
 function createWindow() {
 	win = new BrowserWindow({
 		width: 900,
@@ -118,7 +142,7 @@ const getGrinServerResponse = (path, onResult) => {
 		url,
 		auth: {
 			username: "grin",
-			password: "NYTXd2PmYjBlujFLqrC2"
+			password: grinAPIPassword
 		}
 	})
 		.then(response => {
@@ -126,8 +150,15 @@ const getGrinServerResponse = (path, onResult) => {
 			onResult(data);
 		})
 		.catch(error => {
-			console.error("Node API call failed ", url);
-			console.error(error.response ? error.response.status : error.errno);
+			if (error && error && error.errno === "ECONNREFUSED") {
+				const processName = getProcessName("grin");
+				const errorMessage = `Please run the node manually using a terminal until the daemon is functional: ${processName} `;
+				Logger.error(errorMessage);
+				onResult(null, errorMessage);
+			} else {
+				Logger.error("Node API call failed ", url);
+				Logger.error(error.response ? error.response.status : error.errno);
+			}
 		});
 };
 
@@ -141,7 +172,7 @@ const getGrinWalletResponse = (path, onResult) => {
 		url,
 		auth: {
 			username: "grin",
-			password: "NYTXd2PmYjBlujFLqrC2" //TODO read from ~/.grin/.api_secret
+			password: grinAPIPassword
 		}
 	})
 		.then(response => {
@@ -151,31 +182,65 @@ const getGrinWalletResponse = (path, onResult) => {
 		.catch(error => {
 			console.error("Wallet API call failed ", url);
 			console.error(error.response ? error.response.status : error.errno);
+
+			onResult(null, "Failed to query wallet API");
 		});
+};
+
+const setWalletPassword = () => {
+	const secretFile = `${grinInstallDir}/.api_secret`;
+
+	//Check if api_secret is there to use for API calls
+	if (fs.existsSync(secretFile)) {
+		const secretFileContent = fs.readFileSync(secretFile, "utf8");
+		grinAPIPassword = secretFileContent.trim();
+		return true;
+	} else {
+		Logger.error(`No secret found in ${secretFile}`);
+		return false;
+	}
+};
+
+const walletIsInitialized = () => {
+	const walletSeedFile = `${grinInstallDir}/wallet_data/wallet.seed`;
+	if (fs.existsSync(walletSeedFile)) {
+		return true;
+	} else {
+		Logger.info(`No wallet seed found in ${walletSeedFile}`);
+		return false;
+	}
 };
 
 app.on("ready", () => {
 	createWindow();
-	//TODO check if a wallet has been initialized first
-	const grinInstallDir = `${app.getPath("home")}/.grin`;
-	console.log("Check DIR: ", grinInstallDir);
+	//TODO check if a wallet has been initialized first, if not init one and then start these things
+
+	if (!walletIsInitialized()) {
+		initWallet();
+	}
 
 	//startGrinServer(); //TODO place back when working
 	startWalletAPI();
 	startWalletListen();
 
+	const foundSecret = setWalletPassword();
+
+	if (!foundSecret) {
+		return;
+	}
+
 	ipcMain.on("grin-server-request", (event, args) => {
 		const { path } = args;
 		//TODO move all possible paths to shared config and then check the frontend is only sending valid ones
-		getGrinServerResponse(path, result => {
-			event.sender.send("grin-server-reply", { path, result }); //Passing path back so we know what data we received
+		getGrinServerResponse(path, (result, error = null) => {
+			event.sender.send("grin-server-reply", { path, result, error }); //Passing path back so we know what data we received
 		});
 	});
 
 	ipcMain.on("grin-wallet-request", (event, args) => {
 		const { path } = args;
-		getGrinWalletResponse(path, result => {
-			event.sender.send("grin-wallet-reply", { path, result });
+		getGrinWalletResponse(path, (result, error = null) => {
+			event.sender.send("grin-wallet-reply", { path, result, error });
 		});
 	});
 });
