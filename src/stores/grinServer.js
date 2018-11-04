@@ -1,5 +1,6 @@
 const { ipcRenderer } = window.require("electron");
 import { observable, action, computed } from "mobx";
+import formatValue from "../helpers/formatValue";
 
 const STATUS_PATH = "/status";
 const CONNECTED_PEERS_PATH = "/peers/connected";
@@ -62,6 +63,47 @@ class Server {
 	@computed
 	get totalConnectedPeers() {
 		return this.connectedPeers ? this.connectedPeers.length : 0;
+	}
+
+	@computed
+	get isSyncing() {
+		const progress = this.getSyncProgress;
+		if (progress === false || progress.base < 99.9) {
+			return true;
+		}
+
+		return false;
+	}
+
+	@computed
+	get getSyncProgress() {
+		const currentHeight = this.statusDetails
+			? this.statusDetails.tip.height
+			: 0;
+
+		if (currentHeight <= 1) {
+			return false;
+		}
+
+		if (this.connectedPeers && this.statusDetails) {
+			//Get the average height of peers to see how far we are
+			let totalHeightOfPeers = 0;
+			this.connectedPeers.forEach(({ height }) => {
+				totalHeightOfPeers = totalHeightOfPeers + height;
+			});
+
+			let averageHeight = totalHeightOfPeers / this.connectedPeers.length;
+
+			let percentComplete = (currentHeight / averageHeight) * 100;
+			if (percentComplete > 100) {
+				percentComplete = 100.0;
+			}
+			[];
+			const result = formatValue(percentComplete, 1, 1);
+			return result;
+		}
+
+		return false; //Unknown state
 	}
 }
 

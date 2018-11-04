@@ -1,6 +1,7 @@
 const { ipcRenderer } = window.require("electron");
 import { observable, action, computed } from "mobx";
 import moment from "moment";
+import formatValue from "../helpers/formatValue";
 
 const BALANCES_PATH = "/wallet/owner/retrieve_summary_info?refresh";
 const TRANSACTIONS_PATH = "/wallet/owner/retrieve_txs?refresh";
@@ -98,12 +99,12 @@ class Wallet {
 			let formattedAmountDebited = null;
 
 			if (amount_credited > 0) {
-				const { base, decimals } = this.formatValue(amount_credited);
+				const { base, decimals } = formatValue(amount_credited);
 				formattedAmountCredited = `${base}.${decimals}`;
 			}
 
 			if (amount_debited > 0) {
-				const { base, decimals } = this.formatValue(amount_debited);
+				const { base, decimals } = formatValue(amount_debited);
 				formattedAmountDebited = `-${base}.${decimals}`;
 			}
 
@@ -127,45 +128,29 @@ class Wallet {
 		return this.total !== null;
 	}
 
-	formatValue(value) {
-		let result = {
-			base: 0,
-			decimals: null
-		};
-
-		if (value) {
-			const decimalValue = `${value / 1000000000}`;
-			const splitValues = decimalValue.split(".");
-			result.base = splitValues[0];
-			result.decimals = splitValues[1] || "0";
-		}
-
-		return result;
-	}
-
 	@computed
 	get formattedTotal() {
-		return this.formatValue(this.total);
+		return formatValue(this.total);
 	}
 
 	@computed
 	get formattedAwaitingConfirmation() {
-		return this.formatValue(this.amount_awaiting_confirmation);
+		return formatValue(this.amount_awaiting_confirmation);
 	}
 
 	@computed
 	get formattedCurrentlySpendable() {
-		return this.formatValue(this.amount_currently_spendable);
+		return formatValue(this.amount_currently_spendable);
 	}
 
 	@computed
 	get formattedAmountImmature() {
-		return this.formatValue(this.amount_immature);
+		return formatValue(this.amount_immature);
 	}
 
 	@computed
 	get formattedAmountLocked() {
-		return this.formatValue(this.amount_locked);
+		return formatValue(this.amount_locked);
 	}
 }
 

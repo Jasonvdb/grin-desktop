@@ -30,7 +30,7 @@ const styles = theme => ({
 });
 
 const ErrorDialog = observer(({ classes }) => {
-	const open = grinServer.errorMessage || grinWallet.errorMessage;
+	const open = !!(grinServer.errorMessage || grinWallet.errorMessage);
 	return (
 		<Dialog
 			open={open}
@@ -42,11 +42,10 @@ const ErrorDialog = observer(({ classes }) => {
 		>
 			{grinServer.errorMessage ? (
 				<div className={classes.root}>
-					<Typography className={classes.heading} variant="h3">
-						Grin server error:
-					</Typography>
-
 					<DialogContent>
+						<Typography className={classes.heading} variant="h3">
+							Grin server:
+						</Typography>
 						<DialogContentText className={classes.text}>
 							{grinServer.errorMessage}
 						</DialogContentText>
@@ -56,11 +55,10 @@ const ErrorDialog = observer(({ classes }) => {
 
 			{grinWallet.errorMessage ? (
 				<div className={classes.root}>
-					<Typography className={classes.heading} variant="h3">
-						Grin wallet error:
-					</Typography>
-
 					<DialogContent>
+						<Typography className={classes.heading} variant="h3">
+							Grin wallet:
+						</Typography>
 						<DialogContentText className={classes.text}>
 							{grinWallet.errorMessage}
 						</DialogContentText>

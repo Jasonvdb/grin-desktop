@@ -28,6 +28,8 @@ let grinWalletAPIProcess;
 let grinWalletListenProcess;
 let grinWalletInitProcess;
 
+let apiPassword;
+
 let logQueue = [];
 let logsReady = false;
 
@@ -132,7 +134,7 @@ function createWindow() {
 
 //Server docs
 //https://github.com/mimblewimble/grin/blob/master/doc/api/node_api.md
-const getGrinServerResponse = (path, password, onResult) => {
+const getGrinServerResponse = (path, onResult) => {
 	const url = `http://localhost:13413/v1${path}`;
 
 	axios({
@@ -140,7 +142,7 @@ const getGrinServerResponse = (path, password, onResult) => {
 		url,
 		auth: {
 			username: "grin",
-			password
+			password: apiPassword
 		}
 	})
 		.then(response => {
@@ -152,17 +154,21 @@ const getGrinServerResponse = (path, password, onResult) => {
 				const processName = getProcessName("grin");
 				const errorMessage = `Please run the node manually using a terminal until the daemon is functional: ${processName} `;
 				Logger.error(errorMessage);
+
 				onResult(null, errorMessage);
 			} else {
 				Logger.error("Node API call failed ", url);
 				Logger.error(error.response ? error.response.status : error.errno);
+				if (!apiPassword) {
+					apiPassword = getWalletPassword();
+				}
 			}
 		});
 };
 
 //Wallet docs
 //https://github.com/mimblewimble/grin/blob/master/doc/api/wallet_owner_api.md
-const getGrinWalletResponse = (path, password, onResult) => {
+const getGrinWalletResponse = (path, onResult) => {
 	const url = `http://localhost:13420/v1${path}`;
 
 	axios({
@@ -170,7 +176,7 @@ const getGrinWalletResponse = (path, password, onResult) => {
 		url,
 		auth: {
 			username: "grin",
-			password
+			password: apiPassword
 		}
 	})
 		.then(response => {
@@ -178,7 +184,10 @@ const getGrinWalletResponse = (path, password, onResult) => {
 			onResult(data);
 		})
 		.catch(error => {
-			console.error("Wallet API call failed ", url, " ==== ", password);
+			if (!apiPassword) {
+				apiPassword = getWalletPassword();
+			}
+			console.error("Wallet API call failed ", url);
 			console.error(error.response ? error.response.status : error.errno);
 
 			onResult(null, "Failed to query wallet API");
@@ -220,22 +229,19 @@ app.on("ready", () => {
 	startWalletAPI();
 	startWalletListen();
 
-	const apiPassword = getWalletPassword();
-	if (!apiPassword) {
-		return;
-	}
+	apiPassword = getWalletPassword();
 
 	ipcMain.on("grin-server-request", (event, args) => {
 		const { path } = args;
 		//TODO move all possible paths to shared config and then check the frontend is only sending valid ones
-		getGrinServerResponse(path, apiPassword, (result, error = null) => {
+		getGrinServerResponse(path, (result, error = null) => {
 			event.sender.send("grin-server-reply", { path, result, error }); //Passing path back so we know what data we received
 		});
 	});
 
 	ipcMain.on("grin-wallet-request", (event, args) => {
 		const { path } = args;
-		getGrinWalletResponse(path, apiPassword, (result, error = null) => {
+		getGrinWalletResponse(path, (result, error = null) => {
 			event.sender.send("grin-wallet-reply", { path, result, error });
 		});
 	});
