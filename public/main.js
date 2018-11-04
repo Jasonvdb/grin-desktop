@@ -28,8 +28,6 @@ let grinWalletAPIProcess;
 let grinWalletListenProcess;
 let grinWalletInitProcess;
 
-let grinAPIPassword;
-
 let logQueue = [];
 let logsReady = false;
 
@@ -134,7 +132,7 @@ function createWindow() {
 
 //Server docs
 //https://github.com/mimblewimble/grin/blob/master/doc/api/node_api.md
-const getGrinServerResponse = (path, onResult) => {
+const getGrinServerResponse = (path, password, onResult) => {
 	const url = `http://localhost:13413/v1${path}`;
 
 	axios({
@@ -142,7 +140,7 @@ const getGrinServerResponse = (path, onResult) => {
 		url,
 		auth: {
 			username: "grin",
-			password: grinAPIPassword
+			password
 		}
 	})
 		.then(response => {
@@ -164,7 +162,7 @@ const getGrinServerResponse = (path, onResult) => {
 
 //Wallet docs
 //https://github.com/mimblewimble/grin/blob/master/doc/api/wallet_owner_api.md
-const getGrinWalletResponse = (path, onResult) => {
+const getGrinWalletResponse = (path, password, onResult) => {
 	const url = `http://localhost:13420/v1${path}`;
 
 	axios({
@@ -172,7 +170,7 @@ const getGrinWalletResponse = (path, onResult) => {
 		url,
 		auth: {
 			username: "grin",
-			password: grinAPIPassword
+			password
 		}
 	})
 		.then(response => {
@@ -180,21 +178,21 @@ const getGrinWalletResponse = (path, onResult) => {
 			onResult(data);
 		})
 		.catch(error => {
-			console.error("Wallet API call failed ", url);
+			console.error("Wallet API call failed ", url, " ==== ", password);
 			console.error(error.response ? error.response.status : error.errno);
 
 			onResult(null, "Failed to query wallet API");
 		});
 };
 
-const setWalletPassword = () => {
+const getWalletPassword = () => {
 	const secretFile = `${grinInstallDir}/.api_secret`;
 
 	//Check if api_secret is there to use for API calls
 	if (fs.existsSync(secretFile)) {
 		const secretFileContent = fs.readFileSync(secretFile, "utf8");
-		grinAPIPassword = secretFileContent.trim();
-		return true;
+		const grinAPIPassword = secretFileContent.trim();
+		return grinAPIPassword;
 	} else {
 		Logger.error(`No secret found in ${secretFile}`);
 		return false;
@@ -213,7 +211,6 @@ const walletIsInitialized = () => {
 
 app.on("ready", () => {
 	createWindow();
-	//TODO check if a wallet has been initialized first, if not init one and then start these things
 
 	if (!walletIsInitialized()) {
 		initWallet();
@@ -223,23 +220,22 @@ app.on("ready", () => {
 	startWalletAPI();
 	startWalletListen();
 
-	const foundSecret = setWalletPassword();
-
-	if (!foundSecret) {
+	const apiPassword = getWalletPassword();
+	if (!apiPassword) {
 		return;
 	}
 
 	ipcMain.on("grin-server-request", (event, args) => {
 		const { path } = args;
 		//TODO move all possible paths to shared config and then check the frontend is only sending valid ones
-		getGrinServerResponse(path, (result, error = null) => {
+		getGrinServerResponse(path, apiPassword, (result, error = null) => {
 			event.sender.send("grin-server-reply", { path, result, error }); //Passing path back so we know what data we received
 		});
 	});
 
 	ipcMain.on("grin-wallet-request", (event, args) => {
 		const { path } = args;
-		getGrinWalletResponse(path, (result, error = null) => {
+		getGrinWalletResponse(path, apiPassword, (result, error = null) => {
 			event.sender.send("grin-wallet-reply", { path, result, error });
 		});
 	});
